@@ -39,7 +39,7 @@ import GlobalSettings from "./screens/Global Settings/GlobalSettings";
 import EMS from "./screens/EMS";
 import EMSProfile from "./screens/EMSProfile";
 import GettingStarted from "./screens/GettingStarted";
-import { verify } from "crypto";
+
 
 const ColorSchemeToggle = () => {
   const { mode, setMode } = useColorScheme();
