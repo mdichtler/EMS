@@ -14,17 +14,10 @@ import {
   setDoc,
   limit,
   getDocs,
-  
   updateDoc,
 } from "firebase/firestore";
 
-import {
-  Config,
-  User,
-  GeneralConfig,
-  EMSConfig,
-  EMSProfile,
-} from "./types";
+import { Config, User, GeneralConfig, EMSConfig, EMSProfile } from "./types";
 import { useState } from "react";
 
 const firebaseConfig = require("./../firebaseConfig.json");
@@ -73,16 +66,18 @@ export async function getAppSettings(): Promise<Config | null> {
   }
 }
 
-export async function getEMSProfile(id: string | null): Promise<EMSProfile | null> {
+export async function getEMSProfile(
+  id: string | null
+): Promise<EMSProfile | null> {
   if (!auth.currentUser) {
     return null;
   }
   let profileRef = doc(db, "ems", `${auth.currentUser.email}`);
   if (id) {
     // show profile of other user if Id is provided
-     profileRef = doc(db, "ems", `${id}`);
-  } 
-  
+    profileRef = doc(db, "ems", `${id}`);
+  }
+
   const profileSnap = await getDoc(profileRef);
 
   if (profileSnap.exists()) {
@@ -92,15 +87,19 @@ export async function getEMSProfile(id: string | null): Promise<EMSProfile | nul
   }
 }
 
-
-
-export async function getEMSRecords(maxRows: number): Promise<EMSProfile[] | null> {
+export async function getEMSRecords(
+  maxRows: number
+): Promise<EMSProfile[] | null> {
   const emsRef = query(collection(db, "ems"), limit(maxRows));
   const emsSnap = await getDocs(emsRef);
   const records: EMSProfile[] = [];
 
   emsSnap.forEach((doc) => {
-    records.push({ ...doc.data(), "id": doc.id, email: doc.data().email } as EMSProfile);
+    records.push({
+      ...doc.data(),
+      id: doc.id,
+      email: doc.data().email,
+    } as EMSProfile);
   });
 
   return records;
@@ -114,7 +113,16 @@ export async function updateGeneralAppSettings(
   return res;
 }
 
-
+export async function linkEMSProfile(): Promise<void> {
+  if (!auth.currentUser) {
+    return;
+  }
+  const profileRef = doc(db, "ems", `${auth.currentUser.email}`);
+  const res = await updateDoc(profileRef, {
+    uuid: auth.currentUser.uid,
+  });
+  return res;
+}
 
 export async function updateEMSAppSettings(emsConfig: EMSConfig) {
   const configRef = doc(db, "app", "config");
@@ -131,8 +139,8 @@ export async function updateEMSEmployee(data: EMSProfile) {
 
 // This should be object of type any, since we don't know the structure of the object
 export async function createEMSEmployee(data: EMSProfile) {
-    const res = await setDoc(doc(db, "ems", data.email), data);
-    return res;
+  const res = await setDoc(doc(db, "ems", data.email), data);
+  return res;
 }
 
 export async function setAppSettings(config: Config) {
@@ -140,7 +148,6 @@ export async function setAppSettings(config: Config) {
   const res = await setDoc(configRef, config);
   return res;
 }
-
 
 // :AUTH
 export function signInWithGoogle(): void {

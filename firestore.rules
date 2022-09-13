@@ -1,9 +1,54 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if
-          request.time < timestamp.date(2022, 10, 13);
+  
+    // Helper functions
+    function getAppConfig() {
+      let configPath = /databases/$(database)/documents/app/config;
+      let data = get(configPath).data;
+      return data;
     }
+    
+    // read all
+    function isRead() {
+    	let appConfig = getAppConfig();
+      let isAdmin = appConfig.ems.permissions[request.auth.token.email].admin;
+      let isWrite = appConfig.ems.permissions[request.auth.token.email].write;
+      let isRead = appConfig.ems.permissions[request.auth.token.email].read;
+			return isWrite || isRead || isAdmin  	
+    }
+    
+    // write all
+    function isWrite() {
+    	let appConfig = getAppConfig();
+      let isAdmin = appConfig.ems.permissions[request.auth.token.email].admin;
+      let isWrite = appConfig.ems.permissions[request.auth.token.email].write
+			return isWrite || isAdmin  	
+    }
+    // admins
+    function isAdmin() {
+    	let appConfig = getAppConfig();
+      let isAdmin = appConfig.ems.permissions[request.auth.token.email].admin;
+			return isAdmin  	
+    }
+  	// only updates can be done by either owner or admin
+    // anyone can read
+    match /app/config {
+    	allow read: if request.auth != null
+      allow update: if request.auth.token.email == resource.data.general["owner"] || resource.data.ems.permissions[request.auth.token.email].admin
+    }
+    // user can see their own data 
+    // read, write, admin, and owners can see anyone's data 
+    // write, admin and owners can create - covered under write rule
+    // user can update their UUID and only UUID if it's empty
+    match /ems/{docId} {
+    	allow read: if request.auth != null && (request.auth.token.email == docId || isRead())
+      allow update: if request.auth != null && 
+      ((request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uuid'])) && docId == request.auth.token.email)
+    	allow write: if request.auth != null && isWrite()
+    }
+    
+    
+   
   }
 }

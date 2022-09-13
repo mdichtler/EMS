@@ -1,6 +1,7 @@
 import { Box, Typography } from "@mui/joy";
 import React from "react";
 import { User, Config } from "../helpers/types";
+import EMSProfile from "./EMSProfile";
 interface Props {
   user: User | null;
   config: Config | null;
@@ -30,6 +31,7 @@ export default function Ledger(props: Props) {
       >
         <Typography level="h3">Dashboard</Typography>
       </Box>
+      <EMSProfile config={config} user={user} write={false} isOnDashboard />
     </Box>
   );
 }

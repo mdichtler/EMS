@@ -193,27 +193,7 @@ export default function App() {
           </Box>
 
           <Box sx={{ display: "flex", flexDirection: "row", gap: 1.5 }}>
-            <Menu
-              id="app-selector"
-              control={
-                <IconButton
-                  size="sm"
-                  variant="outlined"
-                  color="primary"
-                  aria-label="Apps"
-                >
-                  <GridViewRoundedIcon />
-                </IconButton>
-              }
-              menus={[
-                {
-                  label: "Settings",
-                  active: true,
-                  href: "/",
-                  "aria-current": "page",
-                },
-              ]}
-            />
+            
             <ColorSchemeToggle />
             {user ? (
               <IconButton

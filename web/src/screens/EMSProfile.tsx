@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   createEMSEmployee,
   getEMSProfile,
+  linkEMSProfile,
   updateEMSEmployee,
 } from "../helpers/firebase";
 import { Config, EMSField, EMSProfile, User } from "../helpers/types";
@@ -12,10 +13,11 @@ interface Props {
   config: Config | null;
   user: User;
   write: boolean;
+  isOnDashboard?: boolean;
 }
 
 export default function EMS(props: Props) {
-  const { config, write, user } = props;
+  const { config, write, user, isOnDashboard } = props;
   const id = useParams().id;
   const navigate = useNavigate();
   const [data, setData] = React.useState<EMSProfile>({
@@ -38,7 +40,20 @@ export default function EMS(props: Props) {
           alert(e);
         });
     }
-  }, [id]);
+    if (isOnDashboard === true) {
+      getEMSProfile(null)
+        .then((profile) => {
+          console.log("profile", profile);
+          if (profile) {
+            setExistingProfile(true);
+            setData(profile);
+          }
+        })
+        .catch((e) => {
+          alert(e);
+        });
+    }
+  }, [id, isOnDashboard]);
 
   React.useEffect(() => {
     if (config?.ems) {
@@ -53,46 +68,48 @@ export default function EMS(props: Props) {
         flexDirection: "column",
       }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          width: "100%",
-          flexDirection: "row",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          m: { xs: 2, md: 0 },
-        }}
-      >
-        <Typography level="h3">EMS</Typography>
-        <Button
-          disabled={!write}
-          variant="solid"
-          onClick={() => {
-            if (write) {
-              if (existingProfile) {
-                updateEMSEmployee(data)
-                  .then(() => {
-                    alert("Profile updated");
-                  })
-                  .catch((e) => {
-                    alert(e);
-                  });
-              } else {
-                createEMSEmployee(data)
-                  .then(() => {
-                    alert("Profile created");
-                    navigate("/ems");
-                  })
-                  .catch((e) => {
-                    alert(e);
-                  });
-              }
-            }
+      {isOnDashboard ? null : (
+        <Box
+          sx={{
+            display: "flex",
+            width: "100%",
+            flexDirection: "row",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            m: { xs: 2, md: 0 },
           }}
         >
-          {existingProfile ? "Update" : "Create"} Profile
-        </Button>
-      </Box>
+          <Typography level="h3">EMS</Typography>
+          <Button
+            disabled={!write}
+            variant="solid"
+            onClick={() => {
+              if (write) {
+                if (existingProfile) {
+                  updateEMSEmployee(data)
+                    .then(() => {
+                      alert("Profile updated");
+                    })
+                    .catch((e) => {
+                      alert(e);
+                    });
+                } else {
+                  createEMSEmployee(data)
+                    .then(() => {
+                      alert("Profile created");
+                      navigate("/ems");
+                    })
+                    .catch((e) => {
+                      alert(e);
+                    });
+                }
+              }
+            }}
+          >
+            {existingProfile ? "Update" : "Create"} Profile
+          </Button>
+        </Box>
+      )}
 
       <Sheet
         variant="outlined"
@@ -130,7 +147,19 @@ export default function EMS(props: Props) {
                     variant="solid"
                     disabled={data.email !== user.email}
                     sx={{ width: 300 }}
-                    onClick={() => {}}
+                    onClick={() => {
+                      linkEMSProfile()
+                        .then(() => {
+                          alert(
+                            "Successfully linked profile, page will now reload."
+                          );
+                          // this isn't working
+                          navigate("/", { replace: true });
+                        })
+                        .catch((e) => {
+                          alert(e);
+                        });
+                    }}
                   >
                     Link Account
                   </Button>
