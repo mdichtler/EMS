@@ -15,9 +15,17 @@ import {
   limit,
   getDocs,
   updateDoc,
+  addDoc,
 } from "firebase/firestore";
 
-import { Config, User, GeneralConfig, EMSConfig, EMSProfile } from "./types";
+import {
+  Config,
+  User,
+  GeneralConfig,
+  EMSConfig,
+  EMSProfile,
+  APIKey,
+} from "./types";
 import { useState } from "react";
 
 const firebaseConfig = require("./../firebaseConfig.json");
@@ -64,6 +72,23 @@ export async function getAppSettings(): Promise<Config | null> {
   } else {
     return null;
   }
+}
+
+export async function getAPIKeys() {
+  const q = query(collection(db, "apiKeys"));
+  const querySnapshot = await getDocs(q);
+  const keys: APIKey[] = [];
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    let key: APIKey = {
+      key: doc.id,
+      name: data.name ?? "",
+      created_by: data.created_by,
+      permissions: data.permissions ?? {},
+    };
+    keys.push(key);
+  });
+  return keys;
 }
 
 export async function getEMSProfile(
@@ -113,6 +138,19 @@ export async function updateGeneralAppSettings(
   return res;
 }
 
+export async function saveKeySettings(key: APIKey) {
+  const keyId = key.key;
+  if (keyId) {
+    const keyRef = doc(db, "apiKeys", keyId);
+    delete key.key;
+    delete key.hidden;
+    const res = await setDoc(keyRef, key);
+    return res;
+  } else {
+    throw new Error("Key ID is missing");
+  }
+}
+
 export async function linkEMSProfile(): Promise<void> {
   if (!auth.currentUser) {
     return;
@@ -136,6 +174,14 @@ export async function updateEMSEmployee(data: EMSProfile) {
 }
 
 // :WRITE FIRESTORE
+export async function generateAPIKey() {
+  const apiKeyRef = collection(db, "apiKeys");
+  const res = await addDoc(apiKeyRef, {
+    created_by: auth.currentUser?.email,
+    permissions: {},
+  });
+  return res;
+}
 
 // This should be object of type any, since we don't know the structure of the object
 export async function createEMSEmployee(data: EMSProfile) {
