@@ -1,6 +1,9 @@
 # EMS (Employee Management System)
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/R5R56SOT1)
+
+
+
 Easy to setup, simple EMS system, with intuitive and quick to setup custom forms, tables, permission system, app settings & API to integrate with your existing tools.
 
 ## Features
@@ -8,19 +11,30 @@ Easy to setup, simple EMS system, with intuitive and quick to setup custom forms
 ##### Deployed ✅:
 
 ✅ Simple and quick setup (<15 minutes) - See Setup section for instructions
+
 ✅ Built with Firebase (cost scales with usage, perfect for small companies)
+
 ✅ Customizable fields (choose from Text, Number, Date and Checkbox, Required / Optional)
+
 ✅ Choose which fields to show in table view
+
 ✅ Permission system (read, write, admin roles)
+
 
 ##### Development 🚧:
 
 [ ] Extensible via API, read and write endpoints (setup via Admin Panel)
+
 [ ] Manage API Access to specific fields, for specific keys
+
 [ ] Render Drawer based on permissions of the user
+
 [ ] Fields with custom JS execution
+
 [ ] Data Export
+
 [ ] Historical Changes
+
 
 ## Preview
 
