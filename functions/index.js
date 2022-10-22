@@ -1,6 +1,9 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-
+// CORS Express middleware to enable CORS Requests.
+const cors = require("cors")({
+  origin: true,
+});
 admin.initializeApp();
 const firestore = admin.firestore();
 async function verifyAPIKey(req, res) {
@@ -50,8 +53,6 @@ exports.getEMSData = functions.https.onRequest(async (request, response) => {
       // check what fields exist on record, compare them to permission, if available on permission, keep, otherwise remove
 
       Object.keys(record).forEach((key) => {
-       
-
         if (permissions.hasOwnProperty(key)) {
           if (permissions[key].read || permissions[key].write) {
             filteredRecord = { ...filteredRecord, [key]: record[key] };
@@ -63,3 +64,45 @@ exports.getEMSData = functions.https.onRequest(async (request, response) => {
     response.status(200).send(filteredData);
   }
 });
+
+exports.createEMSProfile = functions.https.onRequest(
+  async (request, response) => {
+    if (request.method !== "POST") {
+      res.status(403).send("Forbidden!");
+      return;
+    }
+    const permissions = await verifyAPIKey(request, response);
+    if (Object.keys(permissions).length === 0) {
+      response
+        .status(401)
+        .send("Unauthorized - No Permissions set for this key");
+      return;
+    } else {
+      const data = request.body;
+      const emsRef = firestore.collection("ems");
+      let tempData = {};
+      Object.keys(permissions).forEach((key) => {
+        if (permissions[key].write === true) {
+          tempData[key] = data[key];
+        }
+      });
+      if (tempData.hasOwnProperty("email")) {
+        // check if email exists
+        const ems = await emsRef.where("email", "==", tempData.email).get();
+        if (ems.empty) {
+          // create new record
+          const newRecord = await emsRef.doc(tempData.email).set(tempData);
+          response.status(200).send(newRecord);
+        } else {
+          response.status(403).send("Email already exists");
+        }
+      } else {
+        response
+          .status(403)
+          .send(
+            "Email is required, you either do not have permissions to write to email or email is not included in your request"
+          );
+      }
+    }
+  }
+);

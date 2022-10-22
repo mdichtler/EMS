@@ -12,7 +12,6 @@ service cloud.firestore {
     // read all
     function isRead() {
     	let appConfig = getAppConfig();
-      
       let isAdmin = appConfig.ems.permissions[request.auth.token.email].admin;
       let isWrite = appConfig.ems.permissions[request.auth.token.email].write;
       let isRead = appConfig.ems.permissions[request.auth.token.email].read;
@@ -22,23 +21,23 @@ service cloud.firestore {
     // write all
      function isWrite() {
     	let appConfig = getAppConfig();
-     
       let isAdmin = appConfig.ems.permissions[request.auth.token.email].admin;
       let isWrite = appConfig.ems.permissions[request.auth.token.email].write;
-
 			return isWrite || isAdmin  	
     }
     // admins
      function isAdmin() {
     	let appConfig = getAppConfig();
-     
       let isAdmin = appConfig.ems.permissions[request.auth.token.email].admin;
 			return isAdmin  	
     }
+    
+
   	// only updates can be done by either owner or admin
     // anyone can read
     match /app/config {
     	allow read: if request.auth != null
+      allow create: if request.auth != null && exists(/databases/$(database)/documents/app/config) == false
       allow update: if request.auth.token.email == resource.data.general["owner"] || resource.data.ems.permissions[request.auth.token.email].admin
     }
     

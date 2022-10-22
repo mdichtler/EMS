@@ -1,0 +1,8 @@
+{
+  "name": "ems",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "deploy": "firebase deploy --only firestore:rules && firebase deploy --only functions && cd web && npm run build && firebase deploy --only hosting"
+  }
+}
